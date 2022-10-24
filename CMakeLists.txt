@@ -3,4 +3,4 @@ project(B_Tree C)
 
 set(CMAKE_C_STANDARD 11)
 
-add_executable(B_Tree main.c)
+add_executable(B_Tree main.c B_Tree.h operation/bTree.c)
