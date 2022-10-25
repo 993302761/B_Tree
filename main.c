@@ -12,7 +12,9 @@ int main() {
     insert(s,1,data);
     insert(s,6,data);
 
+    insert(s,0,data);
+
     showAll(s->root);
-    _free_tree(s);
+//    _free_tree(s);
 }
 

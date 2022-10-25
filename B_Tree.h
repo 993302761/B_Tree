@@ -26,7 +26,7 @@ typedef struct{
 typedef struct treeNode{
     int keyNum;
     Record *keyList[M];
-    struct treeNode *ptr[M];
+    struct treeNode *ptr[M+1];
     struct treeNode *parent;
 }treeNode;
 

@@ -43,6 +43,7 @@ void merge_node(treeNode *root,Record *s,treeNode *left,treeNode*right){
             i=j;
         }
     }
+    check(root);
     if(root->ptr[M-1]!=NULL){
         printf("错误");
         return;
@@ -53,13 +54,11 @@ void merge_node(treeNode *root,Record *s,treeNode *left,treeNode*right){
         }
     }
     root->ptr[i]=left;
+    left->parent=root;
     root->ptr[i+1]=right;
+    right->parent=root;
 }
 
-int separate(treeNode *n,Record *s){
-    n->keyNum++;
-    n->keyList[0]=s;
-}
 
 void check(treeNode *root){
     if(root->keyNum==3){
