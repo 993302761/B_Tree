@@ -6,6 +6,7 @@
 #define B_TREE_B_TREE_H
 
 #include <malloc.h>
+#include <string.h>
 
 /***
  * 非叶子节点至少有m/2棵子树
@@ -22,28 +23,27 @@ typedef struct{
 }Record;
 
 
-typedef struct tree_node{
+typedef struct treeNode{
     int keyNum;
-    Record *keyList[M-1];
-    struct tree_node *ptr[M];
-    int leaf;                        //是否为叶子节点  0否  1是
-    struct tree_node *parent;
-}tree_node;
+    Record *keyList[M];
+    struct treeNode *ptr[M];
+    struct treeNode *parent;
+}treeNode;
 
-
-
-typedef struct {
-    tree_node *root;
+typedef struct b_tree{
+    treeNode *root;
 }b_tree;
 
 
 
+
 b_tree *newTree();
-int insert(int key,char *data);
-int free_tree(b_tree *root);
-int delete_data(int key);
-Record *get(int key);
-void showAll(b_tree *root);
+void check(treeNode *root);
+int insert(b_tree *root,int key,char *data);
+int _free_tree(b_tree *root);
+int _delete(b_tree *root,int key);
+Record *get(b_tree *root,int key);
+void showAll(treeNode *root);
 
 
 
