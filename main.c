@@ -5,16 +5,19 @@
 int main() {
     b_tree *s=newTree();
     char *data="123";
-    insert(s,3,data);
-    insert(s,2,data);
-    insert(s,4,data);
-    insert(s,5,data);
-    insert(s,1,data);
-    insert(s,6,data);
-
+    insert(s,30,data);
+    insert(s,20,data);
+    insert(s,40,data);
+    insert(s,50,data);
+    insert(s,10,data);
+    insert(s,60,data);
     insert(s,0,data);
-
+    insert(s,15,data);
+    insert(s,16,data);
+    insert(s,17,data);
+    insert(s,18,data);
+//    insert(s,19,data);
     showAll(s->root);
-//    _free_tree(s);
+    _free_tree(s->root);
 }
 

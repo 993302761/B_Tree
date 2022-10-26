@@ -40,7 +40,7 @@ typedef struct b_tree{
 b_tree *newTree();
 void check(treeNode *root);
 int insert(b_tree *root,int key,char *data);
-int _free_tree(b_tree *root);
+int _free_tree(treeNode *root);
 int _delete(b_tree *root,int key);
 Record *get(b_tree *root,int key);
 void showAll(treeNode *root);
