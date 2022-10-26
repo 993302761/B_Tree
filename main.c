@@ -16,7 +16,6 @@ int main() {
     insert(s,16,data);
     insert(s,17,data);
     insert(s,18,data);
-//    insert(s,19,data);
     showAll(s->root);
     _free_tree(s->root);
 }

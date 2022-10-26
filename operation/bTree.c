@@ -73,7 +73,7 @@ void check(treeNode *root){
         root->ptr[1]=right;
         left->parent=root;
         right->parent=root;
-        for (int i = 2; i < M; ++i) {
+        for (int i = 2; i <= M; ++i) {
             root->ptr[i]=NULL;
         }
         if(root->parent!=NULL){
