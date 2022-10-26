@@ -120,6 +120,7 @@ int insert(b_tree *head,int key,char *data){
         }
         merge_node(root,s,NULL,NULL);
     }
+    return 1;
 }
 
 int _free_tree(treeNode *root){
@@ -127,24 +128,46 @@ int _free_tree(treeNode *root){
         return 0;
     }
 
-
     for (int i = 0; i < root->keyNum; ++i) {
         free(root->keyList[i]);
         _free_tree(root->ptr[i]);
     }
     free(root);
+    return 1;
 }
 
-int _delete(b_tree *root,int key){
+int _delete(b_tree *head,int key){
+    if(head==NULL){
+        return 0;
+    }
+    treeNode *root=head->root;
     if(root==NULL){
         return 0;
     }
+
 }
 
-Record *get(b_tree *root,int key){
-    if(root==NULL){
+treeNode *get(b_tree *head,int key){
+    if(head==NULL){
         return NULL;
     }
+    treeNode *root=head->root;
+    int j;
+    while (root!=NULL){
+        int i=root->keyNum;
+        for ( j = 0; j < i; ++j) {
+            if(root->keyList[j]->key==key){
+                return root;
+            } else if(root->keyList[j]->key>key){
+                root=root->ptr[j];
+                break;
+            }
+        }
+        if(j==i){
+            root=root->ptr[i];
+        }
+    }
+    return NULL;
 }
 
 
