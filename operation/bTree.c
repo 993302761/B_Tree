@@ -3,6 +3,7 @@
 //
 
 #include "../B_Tree.h"
+#include <tgmath.h>
 
 b_tree *newTree(){
     b_tree *s=(b_tree *) malloc(sizeof (b_tree));
@@ -55,7 +56,7 @@ void merge_node(treeNode *root,Record *s,treeNode *left,treeNode*right){
 
 
 void check(treeNode *root){
-    if(root->keyNum==3){
+    if(root->keyNum== (int)ceil(M/2.0)){
         //开始执行分裂操作
         treeNode *left=newNode();
         treeNode *right=newNode();
@@ -136,15 +137,76 @@ int _free_tree(treeNode *root){
     return 1;
 }
 
-int _delete(b_tree *head,int key){
+
+
+void  _delete(treeNode *node,int key){
+    int j=node->keyNum;
+    int i;
+    for ( i = 0; i < j; ++i) {
+        if(node->keyList[i]->key==key){
+            free(node->keyList[i]);
+            node->keyList[i]=NULL;
+        }
+    }
+    if(i==j){
+        printf("删除错误");
+        return;
+    }
+    for (int k = i; k < M-1; ++k) {
+        node->keyList[i]=node->keyList[i+1];
+    }
+}
+
+
+
+int deleteNode(b_tree *head,int key){
     if(head==NULL){
         return 0;
     }
-    treeNode *root=head->root;
-    if(root==NULL){
+    treeNode *node= get(head,key);
+    if(node==NULL){
+        printf("找不到此节点");
         return 0;
     }
 
+    //判断是否为叶子结点
+    if(node->ptr[0]==NULL){
+        if(node->keyNum==(int)ceil(M/2.0)-1){
+            treeNode *parent=node->parent;
+            int i;
+            for ( i = 0; i < M+1; ++i) {
+                if(parent->ptr[i]==NULL){
+                    printf("错误-3");
+                    return 0;
+                } else if(parent->ptr[i]==node){
+                    break;
+                }
+            }
+            treeNode *left=NULL;
+            treeNode *right=NULL;
+            if(i>0){
+                left=parent->ptr[i+1];
+            } else if(i<M){
+                right=parent->ptr[i-1];
+            } else{
+                printf("错误-4");
+                return 0;
+            }
+            if(left!=NULL&&left->keyNum>(int)ceil(M/2.0)-1){
+                //左侧同级节点的键数超过最小值
+                _delete(node,key);
+            } else if(right!=NULL&&right->keyNum>(int)ceil(M/2.0)-1){
+                //右侧同级节点的键数超过最小值
+            } else{
+
+            }
+        } else{
+            _delete(node,key);
+        }
+
+    } else{
+
+    }
 }
 
 treeNode *get(b_tree *head,int key){
