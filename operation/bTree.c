@@ -56,7 +56,7 @@ void merge_node(treeNode *root,Record *s,treeNode *left,treeNode*right){
 
 
 void check(treeNode *root){
-    if(root->keyNum== (int)ceil(M/2.0)){
+    if(root->keyNum== M){
         //开始执行分裂操作
         treeNode *left=newNode();
         treeNode *right=newNode();
@@ -139,13 +139,17 @@ int _free_tree(treeNode *root){
 
 
 
-void  _delete(treeNode *node,int key){
+void  _delete(treeNode *node,int key,int p){
     int j=node->keyNum;
     int i;
     for ( i = 0; i < j; ++i) {
         if(node->keyList[i]->key==key){
-            free(node->keyList[i]);
+            if(p==1){
+                free(node->keyList[i]);
+            }
             node->keyList[i]=NULL;
+            node->keyNum--;
+            break;
         }
     }
     if(i==j){
@@ -153,7 +157,7 @@ void  _delete(treeNode *node,int key){
         return;
     }
     for (int k = i; k < M-1; ++k) {
-        node->keyList[i]=node->keyList[i+1];
+        node->keyList[k]=node->keyList[k+1];
     }
 }
 
@@ -185,23 +189,33 @@ int deleteNode(b_tree *head,int key){
             treeNode *left=NULL;
             treeNode *right=NULL;
             if(i>0){
-                left=parent->ptr[i+1];
-            } else if(i<M){
-                right=parent->ptr[i-1];
-            } else{
-                printf("错误-4");
-                return 0;
+                left=parent->ptr[i-1];
+                if(left->keyNum>(int)ceil(M/2.0)-1){
+                    //左侧同级节点的键数超过最小值
+                    _delete(node,key,1);
+                    merge_node(node,parent->keyList[i-1],NULL,NULL);
+                    _delete(parent,parent->keyList[i-1]->key,0);
+                    int k=left->keyNum;
+                    merge_node(parent,left->keyList[k-1],NULL,NULL);
+                    _delete(left,left->keyList[k-1]->key,0);
+                    return 1;
+                }
             }
-            if(left!=NULL&&left->keyNum>(int)ceil(M/2.0)-1){
-                //左侧同级节点的键数超过最小值
-                _delete(node,key);
-            } else if(right!=NULL&&right->keyNum>(int)ceil(M/2.0)-1){
-                //右侧同级节点的键数超过最小值
-            } else{
+            if(i<M){
+                right=parent->ptr[i+1];
+                if(right->keyNum>(int)ceil(M/2.0)-1){
+                    //右侧同级节点的键数超过最小值
+                    _delete(node,key,1);
+                    merge_node(node,parent->keyList[i],NULL,NULL);
+                    _delete(parent,parent->keyList[i]->key,0);
+                    merge_node(parent,right->keyList[0],NULL,NULL);
+                    _delete(right,right->keyList[0]->key,0);
+                    return 1;
+                }
+            }
 
-            }
         } else{
-            _delete(node,key);
+            _delete(node,key,1);
         }
 
     } else{
