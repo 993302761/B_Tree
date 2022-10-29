@@ -13,11 +13,11 @@ int main() {
     insert(s,10,data);
     insert(s,60,data);
     insert(s,0,data);
-    insert(s,15,data);
-    insert(s,19,data);
-    insert(s,17,data);
+//    insert(s,15,data);
+//    insert(s,19,data);
+    insert(s,25,data);
 //    insert(s,12,data);
-    deleteNode(s,20);
+    deleteNode(s,30);
     showAll(s->root);
     _free_tree(s->root);
 
