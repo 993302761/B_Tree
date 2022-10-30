@@ -55,6 +55,29 @@ void merge_node(treeNode *root,Record *s,treeNode *left,treeNode*right){
 }
 
 
+void  _delete(treeNode *node,int key,int p){
+    int j=node->keyNum;
+    int i;
+    for ( i = 0; i < j; ++i) {
+        if(node->keyList[i]->key==key){
+            if(p==1){
+                free(node->keyList[i]);
+            }
+            node->keyList[i]=NULL;
+            node->keyNum--;
+            break;
+        }
+    }
+    if(i==j){
+        printf("删除错误");
+        return;
+    }
+    for (int k = i; k < M-1; ++k) {
+        node->keyList[k]=node->keyList[k+1];
+    }
+}
+
+
 void check(treeNode *root){
     if(root->keyNum== M){
         //开始执行分裂操作
@@ -63,7 +86,6 @@ void check(treeNode *root){
 
         merge_node(left,root->keyList[0],root->ptr[0],root->ptr[1]);
         merge_node(right,root->keyList[2],root->ptr[2],root->ptr[3]);
-
 
         root->keyList[0]=root->keyList[1];
         for (int i = 1; i < M; ++i) {
@@ -83,6 +105,14 @@ void check(treeNode *root){
             free(root);
         }
 
+    }else if(root->ptr[M]!=NULL){
+        treeNode *p=root->ptr[M];
+        for (int i = 0; i < p->keyNum; ++i) {
+            merge_node(root->ptr[M-1],p->keyList[i]->key,NULL,NULL);
+            _delete(p,p->keyList[i]->key,0);
+        }
+        root->ptr[M]=NULL;
+        free(p);
     }
 }
 
@@ -124,6 +154,8 @@ int insert(b_tree *head,int key,char *data){
     return 1;
 }
 
+
+
 int _free_tree(treeNode *root){
     if(root==NULL){
         return 0;
@@ -139,27 +171,6 @@ int _free_tree(treeNode *root){
 
 
 
-void  _delete(treeNode *node,int key,int p){
-    int j=node->keyNum;
-    int i;
-    for ( i = 0; i < j; ++i) {
-        if(node->keyList[i]->key==key){
-            if(p==1){
-                free(node->keyList[i]);
-            }
-            node->keyList[i]=NULL;
-            node->keyNum--;
-            break;
-        }
-    }
-    if(i==j){
-        printf("删除错误");
-        return;
-    }
-    for (int k = i; k < M-1; ++k) {
-        node->keyList[k]=node->keyList[k+1];
-    }
-}
 
 
 
@@ -177,6 +188,10 @@ int deleteNode(b_tree *head,int key){
     if(node->ptr[0]==NULL){
         if(node->keyNum==(int)ceil(M/2.0)-1){
             treeNode *parent=node->parent;
+            if(parent==NULL){
+                _delete(node,key,1);
+                return 1;
+            }
             int i;
             for ( i = 0; i < M+1; ++i) {
                 if(parent->ptr[i]==NULL){
@@ -203,7 +218,7 @@ int deleteNode(b_tree *head,int key){
             }
             if(i<M){
                 right=parent->ptr[i+1];
-                if(right->keyNum>(int)ceil(M/2.0)-1){
+                if(right!=NULL&&right->keyNum>(int)ceil(M/2.0)-1){
                     //右侧同级节点的键数超过最小值
                     _delete(node,key,1);
                     merge_node(node,parent->keyList[i],NULL,NULL);
@@ -213,6 +228,40 @@ int deleteNode(b_tree *head,int key){
                     return 1;
                 }
             }
+            if(left!=NULL){
+                if(parent->keyNum>(int)ceil(M/2.0)-1){
+                    merge_node(left,parent->keyList[i-1],NULL,NULL);
+                    _delete(parent,parent->keyList[i-1]->key,0);
+                    _free_tree(node);
+                    for (int j = i; j < M+1; ++j) {
+                        parent->ptr[j]=parent->ptr[j+1];
+                    }
+                } else{
+                    treeNode *pp=parent->parent;
+                    treeNode *pb=NULL;
+                    int j;
+                    for ( j = 0; j < M; ++j) {
+                        if(pp->ptr[j]==parent){
+                            break;
+                        } else if(pp->ptr[j]==NULL){
+                            printf("错误-10");
+                            return 0;
+                        }
+                    }
+                    if(pp->ptr[j+1]!=NULL){
+                        pb=pp->ptr[j+1];
+                    } else if(pp->ptr[j-1]!=NULL){
+                        pb=pp->ptr[j-1];
+                    } else{
+                        printf("错误-11");
+                        return 0;
+                    }
+                }
+
+            } else{
+
+            }
+
         } else if(node->keyNum>(int)ceil(M/2.0)-1){
             _delete(node,key,1);
         }else{
