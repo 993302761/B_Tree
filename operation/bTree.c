@@ -35,11 +35,12 @@ void merge_node(treeNode *root,Record *s,treeNode *left,treeNode*right){
             i=j;
         }
     }
+    if(root->ptr[M]!=NULL){
+        printf("错误-2");
+        return;
+    }
+
     if(left!=NULL&&right!=NULL){
-        if(root->ptr[M]!=NULL){
-            printf("错误-2");
-            return;
-        }
         if(root->ptr[i]!=NULL){
             for (int j = M; j >i+1 ; --j) {
                 root->ptr[j]=root->ptr[j-1];
@@ -47,6 +48,22 @@ void merge_node(treeNode *root,Record *s,treeNode *left,treeNode*right){
         }
         root->ptr[i]=left;
         left->parent=root;
+        root->ptr[i+1]=right;
+        right->parent=root;
+    } else if(left!=NULL){
+        if(root->ptr[i]!=NULL){
+            for (int j = M; j >i ; --j) {
+                root->ptr[j]=root->ptr[j-1];
+            }
+        }
+        root->ptr[i]=left;
+        left->parent=root;
+    } else if(right!=NULL){
+        if(root->ptr[i]!=NULL){
+            for (int j = M; j >i ; --j) {
+                root->ptr[j]=root->ptr[j-1];
+            }
+        }
         root->ptr[i+1]=right;
         right->parent=root;
     }
@@ -169,9 +186,82 @@ int _free_tree(treeNode *root){
     return 1;
 }
 
+int _delete_ptr(treeNode *root,treeNode *n){
+    for (int i = 0; i < M; ++i) {
+        if(root->ptr[i]==n){
+            root->ptr[i]=NULL;
+            for (int j = i; j < M; ++j) {
+                root->ptr[j]=root->ptr[j+1];
+            }
+            break;
+        }
+    }
+}
 
 
 
+void mergeToFather(b_tree *head,treeNode *parent,treeNode *brother){
+    merge_node(parent,brother->keyList[0],NULL,NULL);
+    _delete(brother,brother->keyList[0]->key,0);
+    _free_tree(brother);
+    for (int j = 0; j < M; ++j) {
+        parent->ptr[j]=NULL;
+    }
+
+    treeNode *pp=parent->parent;
+    if(pp==NULL){
+        return;
+    }
+    treeNode *pb=NULL;
+    int j;
+    for ( j = 0; j < M; ++j) {
+        if(pp->ptr[j]==parent){
+            break;
+        } else if(pp->ptr[j]==NULL){
+            printf("错误-10");
+        }
+    }
+    if(pp->ptr[j+1]!=NULL){
+        pb=pp->ptr[j+1];
+        merge_node(pb,pp->keyList[j],parent,NULL);
+        _delete(pp,pp->keyList[j]->key,0);
+        _delete_ptr(pp,parent);
+    } else if(pp->ptr[j-1]!=NULL){
+        pb=pp->ptr[j-1];
+        merge_node(pb,pp->keyList[j-1],NULL,parent);
+        _delete(pp,pp->keyList[j-1]->key,0);
+        _delete_ptr(pp,parent);
+    } else{
+        printf("错误-11");
+    }
+    if(pp==head->root&&pp->keyNum==0){
+        free(head->root);
+        head->root=pb;
+    }
+}
+
+treeNode *get(b_tree *head,int key){
+    if(head==NULL){
+        return NULL;
+    }
+    treeNode *root=head->root;
+    int j;
+    while (root!=NULL){
+        int i=root->keyNum;
+        for ( j = 0; j < i; ++j) {
+            if(root->keyList[j]->key==key){
+                return root;
+            } else if(root->keyList[j]->key>key){
+                root=root->ptr[j];
+                break;
+            }
+        }
+        if(j==i){
+            root=root->ptr[i];
+        }
+    }
+    return NULL;
+}
 
 
 int deleteNode(b_tree *head,int key){
@@ -180,7 +270,7 @@ int deleteNode(b_tree *head,int key){
     }
     treeNode *node= get(head,key);
     if(node==NULL){
-        printf("找不到此节点");
+        printf("找不到此节点\n");
         return 0;
     }
 
@@ -206,6 +296,7 @@ int deleteNode(b_tree *head,int key){
             if(i>0){
                 left=parent->ptr[i-1];
                 if(left->keyNum>(int)ceil(M/2.0)-1){
+
                     //左侧同级节点的键数超过最小值
                     _delete(node,key,1);
                     merge_node(node,parent->keyList[i-1],NULL,NULL);
@@ -214,6 +305,7 @@ int deleteNode(b_tree *head,int key){
                     merge_node(parent,left->keyList[k-1],NULL,NULL);
                     _delete(left,left->keyList[k-1]->key,0);
                     return 1;
+
                 }
             }
             if(i<M){
@@ -229,37 +321,31 @@ int deleteNode(b_tree *head,int key){
                 }
             }
             if(left!=NULL){
+
                 if(parent->keyNum>(int)ceil(M/2.0)-1){
+
                     merge_node(left,parent->keyList[i-1],NULL,NULL);
                     _delete(parent,parent->keyList[i-1]->key,0);
-                    _free_tree(node);
                     for (int j = i; j < M+1; ++j) {
                         parent->ptr[j]=parent->ptr[j+1];
                     }
                 } else{
-                    treeNode *pp=parent->parent;
-                    treeNode *pb=NULL;
-                    int j;
-                    for ( j = 0; j < M; ++j) {
-                        if(pp->ptr[j]==parent){
-                            break;
-                        } else if(pp->ptr[j]==NULL){
-                            printf("错误-10");
-                            return 0;
-                        }
-                    }
-                    if(pp->ptr[j+1]!=NULL){
-                        pb=pp->ptr[j+1];
-                    } else if(pp->ptr[j-1]!=NULL){
-                        pb=pp->ptr[j-1];
-                    } else{
-                        printf("错误-11");
-                        return 0;
-                    }
+                    mergeToFather(head,parent,left);
+                    _free_tree(node);
                 }
 
             } else{
+                if(parent->keyNum>(int)ceil(M/2.0)-1){
 
+                    merge_node(right,parent->keyList[i],NULL,NULL);
+                    _delete(parent,parent->keyList[i]->key,0);
+                    for (int j = i; j < M+1; ++j) {
+                        parent->ptr[j]=parent->ptr[j+1];
+                    }
+                } else{
+                    mergeToFather(head,parent,right);
+                    _free_tree(node);
+                }
             }
 
         } else if(node->keyNum>(int)ceil(M/2.0)-1){
@@ -301,13 +387,17 @@ int deleteNode(b_tree *head,int key){
                     }
                 }
                 int s=left->keyNum;
-                Record data;
-                data.key=left->keyList[s-1]->key;
-                data.data=left->keyList[s-1]->data;
-                deleteNode(head,data.key);
 
-                node->keyList[i]->key=data.key;
-                node->keyList[i]->data=data.data;
+                int newKey=left->keyList[s-1]->key;
+                char *newData=left->keyList[s-1]->data;
+                deleteNode(head,newKey);
+                treeNode *n=get(head,key);
+                for (int j = 0; j < n->keyNum; ++j) {
+                    if(n->keyList[i]->key==key){
+                        n->keyList[i]->key=newKey;
+                        n->keyList[i]->data=newData;
+                    }
+                }
                 return 1;
             }
 
@@ -318,20 +408,28 @@ int deleteNode(b_tree *head,int key){
             free(right);
 
             treeNode *pBrother=NULL;
-            if(parent->ptr[0]==node){
-                pBrother=parent->ptr[1];
-                parent->ptr[0]=left;
-            } else{
-                pBrother=parent->ptr[0];
-                parent->ptr[1]=left;
+            int j;
+            for ( j = 0; j < M + 1; ++j) {
+                if(parent->ptr[j]==node){
+                    break;
+                }
             }
-
-            merge_node(parent,pBrother->keyList[0],pBrother->ptr[0],pBrother->ptr[1]);
-
+            _delete_ptr(parent,node);
+            if(j>0&&parent->ptr[j-1]!=NULL){
+                pBrother=parent->ptr[j-1];
+                merge_node(pBrother,parent->keyList[j-1],NULL,left);
+                _delete(parent,parent->keyList[j-1]->key,0);
+            } else if(j<M&&parent->ptr[j+1]!=NULL){
+                pBrother=parent->ptr[j];
+                merge_node(pBrother,parent->keyList[j],left,NULL);
+                _delete(parent,parent->keyList[j]->key,0);
+            }else{
+                printf("错误-12");
+                return 0;
+            }
             //删除节点
             _delete(node,node->keyList[i]->key,1);
             free(node);
-
             return 1;
         }else if(node->keyNum>(int)ceil(M/2.0)-1){
             _delete(node,node->keyList[i]->key,1);
@@ -347,8 +445,16 @@ int deleteNode(b_tree *head,int key){
                 _delete(right,right->keyList[0]->key,0);
                 return 1;
             }
+            treeNode *rl=right->ptr[0];
+            treeNode *rr=right->ptr[1];
+            if(rr!=NULL&&rl!=NULL){
+                merge_node(rl,rr->keyList[0],NULL,NULL);
+                _delete(rr,rr->keyList[0]->key,0);
+                free(rr);
+            }
 
-            merge_node(left,right->keyList[0],NULL,NULL);
+
+            merge_node(left,right->keyList[0],NULL,rl);
             _delete(right,right->keyList[0]->key,0);
             free(right);
             for (int j = i+1; j < M; ++j) {
@@ -361,28 +467,6 @@ int deleteNode(b_tree *head,int key){
     }
 }
 
-treeNode *get(b_tree *head,int key){
-    if(head==NULL){
-        return NULL;
-    }
-    treeNode *root=head->root;
-    int j;
-    while (root!=NULL){
-        int i=root->keyNum;
-        for ( j = 0; j < i; ++j) {
-            if(root->keyList[j]->key==key){
-                return root;
-            } else if(root->keyList[j]->key>key){
-                root=root->ptr[j];
-                break;
-            }
-        }
-        if(j==i){
-            root=root->ptr[i];
-        }
-    }
-    return NULL;
-}
 
 
 
